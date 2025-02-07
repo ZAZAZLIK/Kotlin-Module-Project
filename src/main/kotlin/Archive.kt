@@ -1,22 +1,31 @@
-class Archive(private val archiveName: String) {
+import java.util.Scanner
+
+class Archive(val name: String) {
     private val notes = mutableListOf<Note>()
 
-    fun addNote(note: Note) {
-        notes.add(note)
+    fun createNote(scanner: Scanner) {
+        val title = readNonEmptyString(scanner, "Введите заголовок заметки: ")
+        val content = readNonEmptyString(scanner, "Введите содержание заметки: ")
+        notes.add(Note(title, content))
+        println("Заметка \"$title\" добавлена.")
     }
 
     fun displayNotes() {
         if (notes.isEmpty()) {
-            println("Заметок нет.")
+            println("Нет заметок в архиве.")
         } else {
-            println("Заметки в архиве '$archiveName':")
-            notes.forEachIndexed { index, note -> println("$index. ${note.title}") }
+            notes.forEach { println("- ${it.title}: ${it.content}") }
         }
     }
 
-    fun getName(): String {
-        return archiveName
+    private fun readNonEmptyString(scanner: Scanner, prompt: String): String {
+        while (true) {
+            print(prompt)
+            val input = scanner.nextLine()
+            if (input.isNotBlank()) {
+                return input
+            }
+            println("Значение не может быть пустым. Попробуйте снова.")
+        }
     }
-
-    // fun getNotes(): List<Note> = notes
 }

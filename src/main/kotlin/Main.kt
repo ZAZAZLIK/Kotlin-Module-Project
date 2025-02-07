@@ -1,4 +1,6 @@
+import java.util.Scanner
+
 fun main() {
-    val noteApp = NoteApp()
-    noteApp.start()
+    val app = NoteTakingApp(Scanner(System.`in`))
+    app.start()
 }

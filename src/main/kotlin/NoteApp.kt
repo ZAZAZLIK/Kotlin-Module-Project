@@ -1,67 +1,87 @@
 import java.util.Scanner
 
-class NoteApp {
+class NoteTakingApp(private val scanner: Scanner = Scanner(System.`in`)) {
     private val archives = mutableListOf<Archive>()
-    private val scanner = Scanner(System.`in`)
 
     fun start() {
-        val mainMenu = Menu("Список архивов", listOf(
-            Pair("Создать архив") { createArchive() },
-            Pair("Показать архивы") { showArchives() }
-        ))
-
-        mainMenu.display()
+        while (true) {
+            println("Меню приложения:")
+            println("1. Создать архив")
+            println("2. Просмотреть архивы")
+            println("3. Выход")
+            when (readInt("Выберите действие: ")) {
+                1 -> createArchive()
+                2 -> showArchives()
+                3 -> {
+                    println("Выход из программы.")
+                    return
+                }
+                else -> println("Некорректный ввод, попробуйте снова.")
+            }
+        }
     }
 
     private fun createArchive() {
-        println("Введите имя архива:")
-        val name = scanner.nextLine()
-        if (name.isBlank()) {
-            println("Имя архива не может быть пустым.")
-            return
-        }
-        archives.add(Archive(name))
-        println("Архив '$name' создан.")
+        val archiveName = readNonEmptyString("Введите имя архива: ")
+        archives.add(Archive(archiveName))
+        println("Архив '$archiveName' успешно создан.")
     }
 
     private fun showArchives() {
         if (archives.isEmpty()) {
-            println("Архивов нет.")
-            return
-        }
-        val archiveMenu = Menu("Выбор архива", archives.map { archive ->
-            Pair(archive.getName()) {
-                selectArchive(archive)
+            println("Нет доступных архивов.")
+        } else {
+            archives.forEachIndexed { index, archive ->
+                println("${index + 1}. ${archive.name}")
             }
-        })
-        archiveMenu.display()
+            selectArchive()
+        }
     }
 
-    private fun selectArchive(archive: Archive) {
-        val noteMenu = Menu("Заметки в архиве '${archive.getName()}'", listOf(
-            Pair("Создать заметку") { createNote(archive) },
-            Pair("Показать заметки") { archive.displayNotes() }
-        ))
-
-        noteMenu.display()
+    private fun selectArchive() {
+        val index = readInt("Выберите архив для работы (или 0 для назад): ") - 1
+        when {
+            index in archives.indices -> {
+                val archive = archives[index]
+                archiveMenu(archive)
+            }
+            index == -1 -> return
+            else -> println("Некорректный ввод.")
+        }
     }
 
-    private fun createNote(archive: Archive) {
-        println("Введите заголовок заметки:")
-        val title = scanner.nextLine()
-        if (title.isBlank()) {
-            println("Заголовок не может быть пустым.")
-            return
-        }
+    private fun archiveMenu(archive: Archive) {
+        while (true) {
+            println("Меню архива \"${archive.name}\":")
+            println("1. Добавить заметку")
+            println("2. Просмотреть заметки")
+            println("3. Назад")
 
-        println("Введите текст заметки:")
-        val content = scanner.nextLine()
-        if (content.isBlank()) {
-            println("Текст заметки не может быть пустым.")
-            return
+            when (readInt("Выберите опцию: ")) {
+                1 -> archive.createNote(scanner)
+                2 -> archive.displayNotes()
+                3 -> return
+                else -> println("Некорректный ввод, попробуйте снова.")
+            }
         }
+    }
 
-        archive.addNote(Note(title, content))
-        println("Заметка '$title' добавлена в архив '${archive.getName()}'.")
+    private fun readInt(prompt: String): Int {
+        print(prompt)
+        while (!scanner.hasNextInt()) {
+            println("Пожалуйста, введите числовое значение.")
+            scanner.next()
+        }
+        return scanner.nextInt().also { scanner.nextLine() }
+    }
+
+    private fun readNonEmptyString(prompt: String): String {
+        println(prompt)
+        val input = readlnOrNull() ?: ""
+        if (input.isEmpty()) {
+            println("Ошибка: Ввод не может быть пустым.")
+            return readNonEmptyString(prompt)
+        }
+        return input
     }
 }
